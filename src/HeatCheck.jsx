@@ -183,17 +183,13 @@ VERDICT:
 [3-4 sentences. Direct: should they build it? What's the biggest risk? What turns this into $1M/yr vs a side project?]`
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: prompt }]
-        })
+        body: JSON.stringify({ prompt })
       })
       const data = await res.json()
-      const text = data.content?.map(c => c.text || '').join('\n') || ''
+      const text = data.text || ''
       if (!text) throw new Error('Empty response')
       setReport(parseReport(text))
       paywall.incrementChecks()
