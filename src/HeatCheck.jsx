@@ -59,7 +59,7 @@ function Section({ title, children, accent }) {
         fontSize: '10px', fontFamily: "'Space Mono', monospace",
         color: accent, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '12px'
       }}>{title}</div>
-      <div style={{ color: '#ccc', fontSize: '15px', lineHeight: '1.8', fontFamily: "'Lora', serif" }}>
+      <div style={{ color: '#bbb', fontSize: '15px', lineHeight: '1.85', fontFamily: "'Inter', sans-serif", fontWeight: '300', letterSpacing: '0.01em' }}>
         {children}
       </div>
     </div>
@@ -272,11 +272,44 @@ VERDICT:
           </h1>
 
           <p style={{
-            fontFamily: "'Lora', serif", fontStyle: 'italic',
-            color: '#666', fontSize: '17px', maxWidth: '520px', lineHeight: '1.65'
+            fontFamily: "'Inter', sans-serif", fontWeight: '300',
+            color: '#aaa', fontSize: '18px', maxWidth: '480px', lineHeight: '1.7',
+            letterSpacing: '0.01em', marginBottom: '32px'
           }}>
-            Think you have the hottest idea to build an app or new business? Let us check it for you.
+            Know if your idea is worth building — before you spend months finding out the hard way.
           </p>
+
+          {/* What you get */}
+          <div style={{ marginBottom: '10px' }}>
+            <div style={{
+              fontSize: '10px', fontFamily: "'Space Mono', monospace",
+              color: '#333', letterSpacing: '0.2em', textTransform: 'uppercase',
+              marginBottom: '14px'
+            }}>Every report includes</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              {[
+                { icon: '💰', text: 'Monetization score & pricing strategy' },
+                { icon: '🎯', text: 'Hyper-specific ideal customer profile' },
+                { icon: '📈', text: 'Top acquisition channels to get first 10 customers' },
+                { icon: '⚡', text: 'Execution difficulty & time-to-revenue estimate' },
+                { icon: '🔍', text: 'Real competitors & the weaknesses you can exploit' },
+                { icon: '🏆', text: 'Brutal build / no-build verdict' },
+              ].map(({ icon, text }) => (
+                <div key={text} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
+                  padding: '8px 14px',
+                  border: '1px solid #1c1c1c',
+                  background: '#0d0d0d',
+                }}>
+                  <span style={{ fontSize: '13px' }}>{icon}</span>
+                  <span style={{
+                    fontFamily: "'Inter', sans-serif", fontWeight: '300',
+                    fontSize: '12px', color: '#888', letterSpacing: '0.02em'
+                  }}>{text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <ChecksCounter paywall={paywall} />
         </div>
@@ -294,7 +327,7 @@ VERDICT:
             rows={5}
             style={{
               width: '100%', background: '#0d0d0d', border: '1px solid #1e1e1e',
-              color: '#e5e5e5', fontFamily: "'Lora', serif", fontSize: '15px',
+              color: '#e5e5e5', fontFamily: "'Inter', sans-serif", fontWeight: '300', fontSize: '15px',
               lineHeight: '1.75', padding: '20px', resize: 'vertical', transition: 'border-color 0.2s',
             }}
             onFocus={e => e.target.style.borderColor = '#ff6b3555'}
@@ -377,8 +410,8 @@ VERDICT:
                   color: '#ff6b35', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '16px'
                 }}>🔥 Final Verdict</div>
                 <div style={{
-                  color: '#e5e5e5', fontFamily: "'Lora', serif",
-                  fontSize: '16px', lineHeight: '1.85', fontStyle: 'italic'
+                  color: '#ccc', fontFamily: "'Inter', sans-serif",
+                  fontSize: '15px', lineHeight: '1.9', fontWeight: '300', letterSpacing: '0.01em'
                 }}>{report.verdict}</div>
               </div>
             )}
