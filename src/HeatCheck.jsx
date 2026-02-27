@@ -167,7 +167,7 @@ export default function HeatCheck() {
     setError(null)
     setStageIndex(0)
 
-    const prompt = `You are a brutal, honest startup advisor helping founders avoid wasting months building things nobody wants. Analyze this app/business idea. Return ONLY the structured report below — no preamble, no markdown, no asterisks. Plain text only.
+    const prompt = `You are an experienced startup advisor who has seen thousands of ideas succeed and fail. You believe most ideas have a real kernel of potential — your job is to help founders find it and understand what it will take to unlock it. You're honest about risks but you lead with what could work. Analyze this app/business idea and return ONLY the structured report below — no preamble, no markdown, no asterisks. Plain text only.
 
 IDEA: ${idea}
 
@@ -180,19 +180,19 @@ Execution Speed: [0-100]
 Competition Level: [0-100]
 
 CUSTOMER:
-[2-3 sentences. Hyper-specific persona — not "small businesses" but "solo designers charging $75-150/hr who hate writing proposals". Include what they currently use instead.]
+[2-3 sentences. Describe the specific person most likely to pay for this first — their role, their frustration, what they currently use instead. Be specific: not "small businesses" but "solo designers charging $75-150/hr who hate writing proposals".]
 
 PRICING:
-[2-3 sentences. Specific price points like "$7/check" or "$49 one-time". Explain the model and why they'd pay it.]
+[2-3 sentences. Suggest realistic price points with the reasoning behind them. What model fits this idea best and why would the customer accept it?]
 
 ACQUISITION:
-[3 specific, actionable tactics to land the first 10 paying customers. Number them 1, 2, 3.]
+[3 specific, actionable tactics to land the first 10 paying customers. Number them 1, 2, 3. Focus on tactics that don't require a big audience or budget.]
 
 COMPETITORS:
-[2-3 real competitors today. For each: name, what they do, the weakness this idea exploits.]
+[2-3 real competitors. For each: name, what they do well, and the gap this idea could fill that they don't.]
 
 VERDICT:
-[3-4 sentences. Direct: should they build it? What's the biggest risk? What turns this into $1M/yr vs a side project?]`
+[3-4 sentences. Start with what genuinely excites you about this idea. Then name the single biggest risk honestly. End with the one thing the founder needs to get right to make this work.]`
 
     try {
       const res = await fetch('/api/analyze', {
