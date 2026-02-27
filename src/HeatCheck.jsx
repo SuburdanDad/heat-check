@@ -205,6 +205,12 @@ VERDICT:
       if (!text) throw new Error('Empty response')
       setReport(parseReport(text))
       paywall.incrementChecks()
+      // Fire-and-forget tracking — never blocks the user
+      fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea, fingerprint: paywall.fingerprint, event: 'check_run' }),
+      }).catch(() => {})
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
