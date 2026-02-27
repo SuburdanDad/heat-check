@@ -6,16 +6,23 @@ on:
   pull_request_review_comment:
     types: [created]
 
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
 jobs:
   claude:
-    if: contains(github.event.comment.body, '@claude')
+    if: |
+      contains(github.event.comment.body, '@claude') &&
+      github.event.comment.user.login != 'claude[bot]'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-      id-token: write
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
