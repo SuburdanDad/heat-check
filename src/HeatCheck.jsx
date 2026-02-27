@@ -3,6 +3,7 @@ import { usePaywall } from './usePaywall'
 import PaywallModal from './PaywallModal'
 import EmailGateModal from './EmailGateModal'
 import FeedbackWidget from './FeedbackWidget'
+import ThankYou from './ThankYou'
 
 const STAGES = [
   'Checking the temperature...',
@@ -139,6 +140,17 @@ export default function HeatCheck() {
 
   const paywall = usePaywall()
 
+  // Thank you page — shown immediately after Stripe redirect
+  const [thankYouType, setThankYouType] = useState(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const payment = params.get('payment')
+    if (payment === 'single' || payment === 'pack') {
+      setThankYouType(payment)
+    }
+  }, [])
+
   useEffect(() => {
     if (!loading) return
     const iv = setInterval(() => setStageIndex(i => (i + 1) % STAGES.length), 2200)
@@ -198,6 +210,18 @@ VERDICT:
     } finally {
       setLoading(false)
     }
+  }
+
+  if (thankYouType) {
+    return (
+      <ThankYou
+        type={thankYouType}
+        onComplete={() => {
+          setThankYouType(null)
+          window.history.replaceState({}, '', window.location.pathname)
+        }}
+      />
+    )
   }
 
   return (
