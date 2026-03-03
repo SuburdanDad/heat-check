@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 
-export const FREE_LIMIT   = 0   // 0 free checks
-export const EMAIL_BONUS  = 1   // +1 for email = 1 total free
+export const FREE_LIMIT   = 0
+export const EMAIL_BONUS  = 1
 export const PRICE_SINGLE = 3
 export const PRICE_PACK   = 29
 export const PACK_SIZE    = 10
@@ -88,15 +88,14 @@ async function serverEmail(fingerprint) {
 }
 
 export function usePaywall() {
-  const [checksUsed,   setChecksUsed]  = useState(0)
-  const [emailGiven,   setEmailGiven]  = useState(false)
-  const [packChecks,   setPackChecks]  = useState(0)
-  const [singleChecks, setSingleChecks] = useState(0)
-  const [showPaywall,  setShowPaywall] = useState(false)
-  const [showEmail,    setShowEmail]   = useState(false)
-  const [serverSynced, setServerSynced] = useState(false)
+  const [checksUsed,    setChecksUsed]   = useState(0)
+  const [emailGiven,    setEmailGiven]   = useState(false)
+  const [packChecks,    setPackChecks]   = useState(0)
+  const [singleChecks,  setSingleChecks] = useState(0)
+  const [showPaywall,   setShowPaywall]  = useState(false)
   const fingerprintRef = useRef(null)
 
+  // Load from localStorage on mount
   useEffect(() => {
     setChecksUsed(getNum(KEYS.checksUsed))
     setEmailGiven(localStorage.getItem(KEYS.emailGiven) === 'true')
@@ -105,26 +104,28 @@ export function usePaywall() {
     fingerprintRef.current = getOrCreateFingerprint()
   }, [])
 
+  // Sync with server — only enforce higher check counts, never block email-given state
   useEffect(() => {
-    if (!fingerprintRef.current) return
-    serverGet(fingerprintRef.current).then(data => {
-      if (!data.trusted) { setServerSynced(true); return }
-      const serverUsed  = data.checksUsed || 0
-      const serverEmail = data.emailGiven || false
-      const localUsed   = getNum(KEYS.checksUsed)
-      const localEmail  = localStorage.getItem(KEYS.emailGiven) === 'true'
+    const fp = fingerprintRef.current
+    if (!fp) return
+    serverGet(fp).then(data => {
+      if (!data.trusted) return
+      const serverUsed = data.checksUsed || 0
+      const localUsed  = getNum(KEYS.checksUsed)
+      // Only sync upward — never take away checks the server doesn't know about
       if (serverUsed > localUsed) {
         localStorage.setItem(KEYS.checksUsed, String(serverUsed))
         setChecksUsed(serverUsed)
       }
-      if (serverEmail && !localEmail) {
+      // Only sync email if server says true — never remove it
+      if (data.emailGiven && localStorage.getItem(KEYS.emailGiven) !== 'true') {
         localStorage.setItem(KEYS.emailGiven, 'true')
         setEmailGiven(true)
       }
-      setServerSynced(true)
     })
   }, [])
 
+  // Handle Stripe return
   useEffect(() => {
     const params  = new URLSearchParams(window.location.search)
     const payment = params.get('payment')
@@ -169,18 +170,20 @@ export function usePaywall() {
     }
   }
 
-  function grantEmailBonus() {
+  function grantEmailBonus(email) {
     localStorage.setItem(KEYS.emailGiven, 'true')
     setEmailGiven(true)
-    setShowEmail(false)
     if (fingerprintRef.current) serverEmail(fingerprintRef.current)
-  }
-
-  function requestCheck() {
-    if (!emailGiven) return false
-    if (canCheck) return true
-    setShowPaywall(true)
-    return false
+    // Track email in Airtable
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        fingerprint: fingerprintRef.current,
+        event: 'email_capture',
+      }),
+    }).catch(() => {})
   }
 
   return {
@@ -192,14 +195,10 @@ export function usePaywall() {
     packChecks,
     singleChecks,
     showPaywall,
-    showEmail,
-    serverSynced,
     fingerprint: fingerprintRef.current,
     setShowPaywall,
-    setShowEmail,
     grantEmailBonus,
     incrementChecks,
-    requestCheck,
     FREE_LIMIT,
     EMAIL_BONUS,
     freeChecksEarned,
