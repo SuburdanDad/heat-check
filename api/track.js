@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { idea, fingerprint, event } = req.body
+  const { idea, email, fingerprint, event } = req.body
 
   // Airtable config from environment variables
   const baseId  = process.env.AIRTABLE_BASE_ID
@@ -27,6 +27,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           fields: {
             Idea:        idea        || '',
+            Email:       email       || '',
             Event:       event       || 'check_run',
             Fingerprint: fingerprint || '',
             Date:        new Date().toISOString(),

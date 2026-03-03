@@ -128,6 +128,12 @@ export default function HeatCheck() {
     e.preventDefault()
     if (!email.trim()) return
     paywall.grantEmailBonus()
+    // Fire-and-forget email capture tracking — never blocks the user
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, fingerprint: paywall.fingerprint, event: 'email_capture' }),
+    }).catch(() => {})
     setEmail('')
   }
 
