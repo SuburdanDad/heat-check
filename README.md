@@ -2,15 +2,15 @@
 
 > Think you have the hottest idea to build an app or new business? Let us check it for you.
 
-AI-powered startup idea validator. Brutal, honest revenue reports — target customer,
+AI-powered startup idea validator. Honest revenue reports — target customer,
 pricing strategy, acquisition tactics, competitors, and a final verdict.
 
 ---
 
 ## What's New in v1.1
 
-- **Revised monetization** — pay-per-report ($7 single / $49 Founder Pack of 10) instead of $29/mo subscription
-- **Email gate** — 2 free checks → email unlock (+1 bonus check) → paywall
+- **Revised monetization** — pay-per-report ($3 single / $29 Founder Pack of 10) instead of $29/mo subscription
+- **Email gate** — email required before first check → 1 free check → paywall
 - **Feedback widget** — slide-in tab lets users submit categorized feedback
 - **Checks counter** — live flame indicators showing remaining checks
 
@@ -26,8 +26,8 @@ pricing strategy, acquisition tactics, competitors, and a final verdict.
 
 | Link | Price | Type | Success Redirect |
 |------|-------|------|-----------------|
-| Single check | $7 | One-time | `https://YOURDOMAIN.com?payment=single` |
-| Founder Pack | $49 | One-time | `https://YOURDOMAIN.com?payment=pack` |
+| Single check | $3 | One-time | `https://YOURDOMAIN.com?payment=single` |
+| Founder Pack | $29 | One-time | `https://YOURDOMAIN.com?payment=pack` |
 
 ### 3. Email capture (optional but recommended)
 → [beehiiv.com](https://beehiiv.com) → Create free newsletter → Settings → Embed → copy form URL
@@ -64,12 +64,11 @@ npm run dev                   # → http://localhost:5173
 
 ```
 Visit site
-  └─ 2 FREE checks (no friction)
-       └─ Out of checks?
-            └─ No email yet? → EMAIL GATE → +1 bonus check
-                 └─ Still out? → PAYWALL
-                      ├─ $7 Single check (Stripe one-time)
-                      └─ $49 Founder Pack — 10 checks (Stripe one-time)
+  └─ EMAIL GATE (required before first check)
+       └─ Email given → 1 FREE check
+            └─ Out of checks? → PAYWALL
+                 ├─ $3 Single check (Stripe one-time)
+                 └─ $29 Founder Pack — 10 checks (Stripe one-time)
 ```
 
 Payment redirects back with `?payment=single` or `?payment=pack`,
@@ -81,10 +80,10 @@ which the app detects and credits the user immediately.
 
 | Sales | Revenue |
 |-------|---------|
-| 10 single checks | $70 |
-| 10 Founder Packs | $490 |
-| 100 Founder Packs | $4,900 |
-| 100 singles + 50 packs | $3,150 |
+| 10 single checks | $30 |
+| 10 Founder Packs | $290 |
+| 100 Founder Packs | $2,900 |
+| 100 singles + 50 packs | $1,750 |
 
 No subscriptions means less churn anxiety. Focus on acquisition.
 

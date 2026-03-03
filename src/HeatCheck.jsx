@@ -38,7 +38,7 @@ function ScoreBar({ score, label, color }) {
   return (
     <div style={{ marginBottom: '16px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-        <span style={{ fontSize: '12px', fontFamily: "'Space Mono', monospace", color: '#666', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</span>
+        <span style={{ fontSize: '12px', fontFamily: "'Space Mono', monospace", color: '#e5e5e5', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</span>
         <span style={{ fontSize: '13px', fontFamily: "'Space Mono', monospace", color, fontWeight: '700' }}>{score}/100</span>
       </div>
       <div style={{ height: '5px', background: '#1a1a1a', borderRadius: '3px', overflow: 'hidden' }}>
@@ -60,7 +60,7 @@ function Section({ title, children, accent }) {
         fontSize: '10px', fontFamily: "'Space Mono', monospace",
         color: accent, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '12px'
       }}>{title}</div>
-      <div style={{ color: '#bbb', fontSize: '15px', lineHeight: '1.85', fontFamily: "'Inter', sans-serif", fontWeight: '300', letterSpacing: '0.01em' }}>
+      <div style={{ color: '#e5e5e5', fontSize: '15px', lineHeight: '1.85', fontFamily: "'Inter', sans-serif", fontWeight: '300', letterSpacing: '0.01em' }}>
         {children}
       </div>
     </div>
@@ -99,9 +99,10 @@ const scoreColors = {
 }
 
 function ChecksCounter({ paywall }) {
-  const { canCheck, checksRemaining, emailGiven, hasPaidChecks, freeRemaining, FREE_LIMIT, EMAIL_BONUS } = paywall
+  const { canCheck, checksRemaining, emailGiven, hasPaidChecks, freeRemaining, FREE_LIMIT, EMAIL_BONUS, setShowPaywall } = paywall
   const total = FREE_LIMIT + EMAIL_BONUS
   const flames = hasPaidChecks ? checksRemaining : freeRemaining
+  const noChecksLeft = !hasPaidChecks && freeRemaining <= 0
 
   return (
     <div style={{
@@ -116,17 +117,25 @@ function ChecksCounter({ paywall }) {
           : (flames > 0 ? '🔥'.repeat(flames) + '🩶'.repeat(Math.max(0, total - Math.max(0, total - flames) - flames)) : '💀')
         }
       </span>
-      <span style={{
-        fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.06em',
-        color: canCheck ? '#555' : '#f87171'
-      }}>
-        {hasPaidChecks
-          ? `${checksRemaining} check${checksRemaining !== 1 ? 's' : ''} remaining`
-          : freeRemaining > 0
-            ? `${freeRemaining} free check${freeRemaining !== 1 ? 's' : ''} left${!emailGiven ? ' · +1 with email' : ''}`
-            : 'No checks left'
-        }
-      </span>
+      {noChecksLeft ? (
+        <button
+          className="submit-btn"
+          style={{ padding: '8px 16px', fontSize: '11px', letterSpacing: '0.06em' }}
+          onClick={() => setShowPaywall(true)}
+        >
+          No checks left — Get More 🔥
+        </button>
+      ) : (
+        <span style={{
+          fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.06em',
+          color: canCheck ? '#e5e5e5' : '#f87171'
+        }}>
+          {hasPaidChecks
+            ? `${checksRemaining} check${checksRemaining !== 1 ? 's' : ''} remaining`
+            : `${freeRemaining} free check${freeRemaining !== 1 ? 's' : ''} left${!emailGiven ? ' · +1 with email' : ''}`
+          }
+        </span>
+      )}
     </div>
   )
 }
@@ -260,7 +269,7 @@ VERDICT:
       `}</style>
 
       {paywall.showPaywall  && <PaywallModal    onDismiss={() => paywall.setShowPaywall(false)} />}
-      {paywall.showEmail    && <EmailGateModal  onSuccess={paywall.grantEmailBonus} onDismiss={() => { paywall.setShowEmail(false); paywall.setShowPaywall(true) }} />}
+      {paywall.showEmail    && <EmailGateModal  onSuccess={paywall.grantEmailBonus} onDismiss={() => paywall.setShowEmail(false)} />}
 
       <FeedbackWidget />
 
@@ -303,7 +312,7 @@ VERDICT:
 
           <p style={{
             fontFamily: "'Inter', sans-serif", fontWeight: '300',
-            color: '#aaa', fontSize: '18px', maxWidth: '480px', lineHeight: '1.7',
+            color: '#e5e5e5', fontSize: '18px', maxWidth: '480px', lineHeight: '1.7',
             letterSpacing: '0.01em', marginBottom: '32px'
           }}>
             Know if your idea is worth building — before you spend months finding out the hard way.
@@ -313,7 +322,7 @@ VERDICT:
           <div style={{ marginBottom: '10px' }}>
             <div style={{
               fontSize: '10px', fontFamily: "'Space Mono', monospace",
-              color: '#333', letterSpacing: '0.2em', textTransform: 'uppercase',
+              color: '#e5e5e5', letterSpacing: '0.2em', textTransform: 'uppercase',
               marginBottom: '14px'
             }}>Every report includes</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
@@ -323,7 +332,7 @@ VERDICT:
                 { icon: '📈', text: 'Top acquisition channels to get first 10 customers' },
                 { icon: '⚡', text: 'Execution difficulty & time-to-revenue estimate' },
                 { icon: '🔍', text: 'Real competitors & the weaknesses you can exploit' },
-                { icon: '🏆', text: 'Brutal build / no-build verdict' },
+                { icon: '🏆', text: 'Honest build / no-build verdict' },
               ].map(({ icon, text }) => (
                 <div key={text} style={{
                   display: 'inline-flex', alignItems: 'center', gap: '8px',
@@ -334,7 +343,7 @@ VERDICT:
                   <span style={{ fontSize: '13px' }}>{icon}</span>
                   <span style={{
                     fontFamily: "'Inter', sans-serif", fontWeight: '300',
-                    fontSize: '12px', color: '#888', letterSpacing: '0.02em'
+                    fontSize: '12px', color: '#e5e5e5', letterSpacing: '0.02em'
                   }}>{text}</span>
                 </div>
               ))}
@@ -348,7 +357,7 @@ VERDICT:
         <div style={{ width: '100%', maxWidth: '720px', paddingTop: '40px', zIndex: 1 }}>
           <div style={{
             fontSize: '11px', fontFamily: "'Space Mono', monospace",
-            color: '#3a3a3a', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px'
+            color: '#e5e5e5', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px'
           }}>Drop your idea</div>
           <textarea
             value={idea}
@@ -356,15 +365,15 @@ VERDICT:
             placeholder="e.g. An AI tool that writes cold emails personalized to each prospect's LinkedIn profile and recent posts, with one-click sending from Gmail..."
             rows={5}
             style={{
-              width: '100%', background: '#0d0d0d', border: '1px solid #1e1e1e',
+              width: '100%', background: '#0d0d0d', border: '1px solid #ffffff',
               color: '#e5e5e5', fontFamily: "'Inter', sans-serif", fontWeight: '300', fontSize: '15px',
               lineHeight: '1.75', padding: '20px', resize: 'vertical', transition: 'border-color 0.2s',
             }}
-            onFocus={e => e.target.style.borderColor = '#ff6b3555'}
-            onBlur={e => e.target.style.borderColor = '#1e1e1e'}
+            onFocus={e => e.target.style.borderColor = '#ff6b35'}
+            onBlur={e => e.target.style.borderColor = '#ffffff'}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#2a2a2a' }}>
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#e5e5e5' }}>
               {idea.length > 0 && `${idea.length} chars`}
             </span>
             <button
@@ -417,7 +426,7 @@ VERDICT:
               <div style={{ marginBottom: '52px' }}>
                 <div style={{
                   fontSize: '10px', fontFamily: "'Space Mono', monospace",
-                  color: '#333', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '20px'
+                  color: '#e5e5e5', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '20px'
                 }}>Signal Scores</div>
                 {Object.entries(report.parsedScores).map(([label, score]) => (
                   <ScoreBar key={label} label={label} score={score} color={scoreColors[label] || '#ff6b35'} />
@@ -440,7 +449,7 @@ VERDICT:
                   color: '#ff6b35', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '16px'
                 }}>🔥 Final Verdict</div>
                 <div style={{
-                  color: '#ccc', fontFamily: "'Inter', sans-serif",
+                  color: '#e5e5e5', fontFamily: "'Inter', sans-serif",
                   fontSize: '15px', lineHeight: '1.9', fontWeight: '300', letterSpacing: '0.01em'
                 }}>{report.verdict}</div>
               </div>

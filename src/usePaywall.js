@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 
-export const FREE_LIMIT   = 1   // 1 free check
-export const EMAIL_BONUS  = 1   // +1 for email = 2 total free
-export const PRICE_SINGLE = 7
-export const PRICE_PACK   = 49
+export const FREE_LIMIT   = 0   // 0 free checks without email
+export const EMAIL_BONUS  = 1   // +1 for email = 1 total free
+export const PRICE_SINGLE = 3
+export const PRICE_PACK   = 29
 export const PACK_SIZE    = 10
 
 const KEYS = {
@@ -124,6 +124,13 @@ export function usePaywall() {
       setServerSynced(true)
     })
   }, [])
+
+  // Auto-show email gate on first visit if email not yet given
+  useEffect(() => {
+    if (serverSynced && !emailGiven) {
+      setShowEmail(true)
+    }
+  }, [serverSynced])
 
   useEffect(() => {
     const params  = new URLSearchParams(window.location.search)
