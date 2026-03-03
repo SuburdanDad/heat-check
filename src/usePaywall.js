@@ -177,7 +177,7 @@ export function usePaywall() {
   }
 
   function requestCheck() {
-    if (!emailGiven) { setShowEmail(true); return false }
+    if (!emailGiven) return false
     if (canCheck) return true
     setShowPaywall(true)
     return false

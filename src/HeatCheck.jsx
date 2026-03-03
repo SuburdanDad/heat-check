@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { usePaywall } from './usePaywall'
 import PaywallModal from './PaywallModal'
-import EmailGateModal from './EmailGateModal'
 import FeedbackWidget from './FeedbackWidget'
 import ThankYou from './ThankYou'
 
@@ -98,58 +97,9 @@ const scoreColors = {
   'Competition Level': '#f87171',
 }
 
-function ChecksCounter({ paywall }) {
-  const { canCheck, checksRemaining, emailGiven, hasPaidChecks, freeRemaining, FREE_LIMIT, EMAIL_BONUS } = paywall
-  const total = FREE_LIMIT + EMAIL_BONUS
-  const flames = hasPaidChecks ? checksRemaining : freeRemaining
-
-  if (!canCheck && emailGiven) {
-    return (
-      <button
-        onClick={() => paywall.setShowPaywall(true)}
-        style={{
-          marginTop: '24px', padding: '10px 20px',
-          background: '#ff6b35', color: '#0a0a0a', border: 'none',
-          fontFamily: "'Space Mono', monospace", fontWeight: '700',
-          fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase',
-          cursor: 'pointer',
-        }}
-      >
-        Get More Checks 🔥
-      </button>
-    )
-  }
-
-  return (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center', gap: '10px',
-      marginTop: '24px', padding: '10px 16px',
-      border: `1px solid ${canCheck ? '#222' : '#f8717133'}`,
-      background: canCheck ? '#0f0f0f' : '#f8717108',
-    }}>
-      <span style={{ fontSize: '14px', letterSpacing: '2px' }}>
-        {hasPaidChecks
-          ? '🔥'.repeat(Math.min(flames, 5)) + (flames > 5 ? ` ×${flames}` : '')
-          : (flames > 0 ? '🔥'.repeat(flames) + '🩶'.repeat(Math.max(0, total - Math.max(0, total - flames) - flames)) : '💀')
-        }
-      </span>
-      <span style={{
-        fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.06em',
-        color: canCheck ? '#555' : '#f87171'
-      }}>
-        {hasPaidChecks
-          ? `${checksRemaining} check${checksRemaining !== 1 ? 's' : ''} remaining`
-          : freeRemaining > 0
-            ? `${freeRemaining} free check${freeRemaining !== 1 ? 's' : ''} left${!emailGiven ? ' · +1 with email' : ''}`
-            : 'No checks left'
-        }
-      </span>
-    </div>
-  )
-}
-
 export default function HeatCheck() {
   const [idea, setIdea]           = useState('')
+  const [email, setEmail]         = useState('')
   const [loading, setLoading]     = useState(false)
   const [stageIndex, setStageIndex] = useState(0)
   const [report, setReport]       = useState(null)
@@ -173,6 +123,13 @@ export default function HeatCheck() {
     const iv = setInterval(() => setStageIndex(i => (i + 1) % STAGES.length), 2200)
     return () => clearInterval(iv)
   }, [loading])
+
+  function handleEmailSubmit(e) {
+    e.preventDefault()
+    if (!email.trim()) return
+    paywall.grantEmailBonus()
+    setEmail('')
+  }
 
   async function handleSubmit() {
     if (!idea.trim()) return
@@ -252,6 +209,8 @@ VERDICT:
       <style>{`
         textarea:focus { outline: none; }
         textarea::placeholder { color: #888; }
+        input[type="email"]:focus { outline: none; }
+        input[type="email"]::placeholder { color: #888; }
         .submit-btn {
           background: #ff6b35; color: #0a0a0a; border: none;
           padding: 15px 40px; font-family: 'Space Mono', monospace;
@@ -276,8 +235,7 @@ VERDICT:
         @keyframes glow { 0%,100%{text-shadow:0 0 40px #ff6b3550} 50%{text-shadow:0 0 80px #ff6b3580,0 0 120px #ff6b3525} }
       `}</style>
 
-      {paywall.showPaywall  && <PaywallModal    onDismiss={() => paywall.setShowPaywall(false)} />}
-      {paywall.showEmail    && <EmailGateModal  onSuccess={paywall.grantEmailBonus} onDismiss={() => { paywall.setShowEmail(false); paywall.setShowPaywall(true) }} />}
+      {paywall.showPaywall && <PaywallModal onDismiss={() => paywall.setShowPaywall(false)} />}
 
       <FeedbackWidget />
 
@@ -357,8 +315,6 @@ VERDICT:
               ))}
             </div>
           </div>
-
-          <ChecksCounter paywall={paywall} />
         </div>
 
         {/* Input */}
@@ -380,16 +336,50 @@ VERDICT:
             onFocus={e => e.target.style.borderColor = '#ff6b3555'}
             onBlur={e => e.target.style.borderColor = '#ffffff'}
           />
+
+          {/* Inline email input — hidden once email has been given */}
+          {!paywall.emailGiven && (
+            <form onSubmit={handleEmailSubmit} style={{ marginTop: '20px' }}>
+              <div style={{
+                fontSize: '11px', fontFamily: "'Space Mono', monospace",
+                color: '#e5e5e5', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px'
+              }}>Your Email</div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  style={{
+                    flex: 1, background: '#0d0d0d', border: '1px solid #ffffff',
+                    color: '#e5e5e5', fontFamily: "'Inter', sans-serif", fontWeight: '300',
+                    fontSize: '15px', lineHeight: '1.75', padding: '20px',
+                    transition: 'border-color 0.2s',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#ff6b3555'}
+                  onBlur={e => e.target.style.borderColor = '#ffffff'}
+                />
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={!email.trim()}
+                >
+                  Claim Free Check →
+                </button>
+              </div>
+            </form>
+          )}
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#2a2a2a' }}>
               {idea.length > 0 && `${idea.length} chars`}
             </span>
             <button
               className="submit-btn"
-              onClick={handleSubmit}
-              disabled={loading || !idea.trim()}
+              onClick={paywall.canCheck ? handleSubmit : () => paywall.setShowPaywall(true)}
+              disabled={paywall.canCheck && (loading || !idea.trim())}
             >
-              {loading ? 'Running...' : paywall.canCheck ? 'Run Heat Check 🔥' : 'Get More Checks →'}
+              {loading ? 'Running...' : paywall.canCheck ? 'Get Heat Check Report 🔥' : 'Get More Checks →'}
             </button>
           </div>
         </div>
