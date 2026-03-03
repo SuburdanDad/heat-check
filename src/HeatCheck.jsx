@@ -364,7 +364,7 @@ VERDICT:
                   className="submit-btn"
                   disabled={!email.trim()}
                 >
-                  Claim Free Check →
+                  Heat Check! 🔥
                 </button>
               </div>
             </form>
@@ -374,13 +374,15 @@ VERDICT:
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#2a2a2a' }}>
               {idea.length > 0 && `${idea.length} chars`}
             </span>
-            <button
-              className="submit-btn"
-              onClick={paywall.canCheck ? handleSubmit : () => paywall.setShowPaywall(true)}
-              disabled={paywall.canCheck && (loading || !idea.trim())}
-            >
-              {loading ? 'Running...' : paywall.canCheck ? 'Get Heat Check Report 🔥' : 'Get More Checks →'}
-            </button>
+            {paywall.canCheck && (
+              <button
+                className="submit-btn"
+                onClick={handleSubmit}
+                disabled={loading || !idea.trim()}
+              >
+                {loading ? 'Running...' : 'Get Heat Check Report 🔥'}
+              </button>
+            )}
           </div>
         </div>
 
