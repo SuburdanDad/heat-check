@@ -393,7 +393,7 @@ VERDICT:
               onClick={handleMainButton}
               disabled={paywall.canCheck && (loading || !idea.trim())}
             >
-              {!paywall.canCheck ? 'Get More Checks →' : loading ? 'Running...' : 'Heat Check! 🔥'}
+              {!paywall.canCheck ? 'Get More Checks →' : loading ? 'Running...' : 'Shoot Your Shot! 🔥'}
             </button>
           </div>
         </div>
