@@ -104,6 +104,7 @@ export default function HeatCheck() {
   const [stageIndex, setStageIndex] = useState(0)
   const [report, setReport]       = useState(null)
   const [error, setError]         = useState(null)
+  const [emailError, setEmailError] = useState('')
 
   const paywall = usePaywall()
 
@@ -124,17 +125,28 @@ export default function HeatCheck() {
     return () => clearInterval(iv)
   }, [loading])
 
-  function handleEmailSubmit(e) {
-    e.preventDefault()
-    if (!email.trim()) return
-    paywall.grantEmailBonus()
-    // Fire-and-forget email capture tracking — never blocks the user
-    fetch('/api/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, fingerprint: paywall.fingerprint, event: 'email_capture' }),
-    }).catch(() => {})
-    setEmail('')
+  function handleMainButton() {
+    if (!paywall.canCheck) {
+      paywall.setShowPaywall(true)
+      return
+    }
+    if (!paywall.emailGiven) {
+      if (!email.trim()) {
+        setEmailError('Enter your email to continue')
+        return
+      }
+      setEmailError('')
+      paywall.grantEmailBonus()
+      // Fire-and-forget email capture tracking — never blocks the user
+      fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, fingerprint: paywall.fingerprint, event: 'email_capture' }),
+      }).catch(() => {})
+      handleSubmit()
+      return
+    }
+    handleSubmit()
   }
 
   async function handleSubmit() {
@@ -345,50 +357,44 @@ VERDICT:
 
           {/* Inline email input — hidden once email has been given */}
           {!paywall.emailGiven && (
-            <form onSubmit={handleEmailSubmit} style={{ marginTop: '20px' }}>
+            <div style={{ marginTop: '20px' }}>
               <div style={{
                 fontSize: '11px', fontFamily: "'Space Mono', monospace",
                 color: '#e5e5e5', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px'
               }}>Your Email</div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  style={{
-                    flex: 1, background: '#0d0d0d', border: '1px solid #ffffff',
-                    color: '#e5e5e5', fontFamily: "'Inter', sans-serif", fontWeight: '300',
-                    fontSize: '15px', lineHeight: '1.75', padding: '20px',
-                    transition: 'border-color 0.2s',
-                  }}
-                  onFocus={e => e.target.style.borderColor = '#ff6b3555'}
-                  onBlur={e => e.target.style.borderColor = '#ffffff'}
-                />
-                <button
-                  type="submit"
-                  className="submit-btn"
-                  disabled={!email.trim()}
-                >
-                  Heat Check! 🔥
-                </button>
-              </div>
-            </form>
+              <input
+                type="email"
+                value={email}
+                onChange={e => { setEmail(e.target.value); if (emailError) setEmailError('') }}
+                placeholder="you@example.com"
+                style={{
+                  width: '100%', background: '#0d0d0d', border: '1px solid #ffffff',
+                  color: '#e5e5e5', fontFamily: "'Inter', sans-serif", fontWeight: '300',
+                  fontSize: '15px', lineHeight: '1.75', padding: '20px',
+                  transition: 'border-color 0.2s',
+                }}
+                onFocus={e => e.target.style.borderColor = '#ff6b3555'}
+                onBlur={e => e.target.style.borderColor = '#ffffff'}
+              />
+              {emailError && (
+                <div style={{ color: '#f87171', fontFamily: "'Space Mono', monospace", fontSize: '11px', marginTop: '8px', letterSpacing: '0.05em' }}>
+                  {emailError}
+                </div>
+              )}
+            </div>
           )}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#2a2a2a' }}>
               {idea.length > 0 && `${idea.length} chars`}
             </span>
-            {paywall.canCheck && (
-              <button
-                className="submit-btn"
-                onClick={handleSubmit}
-                disabled={loading || !idea.trim()}
-              >
-                {loading ? 'Running...' : 'Get Heat Check Report 🔥'}
-              </button>
-            )}
+            <button
+              className="submit-btn"
+              onClick={handleMainButton}
+              disabled={paywall.canCheck && (loading || !idea.trim())}
+            >
+              {!paywall.canCheck ? 'Get More Checks →' : loading ? 'Running...' : 'Heat Check! 🔥'}
+            </button>
           </div>
         </div>
 
@@ -465,11 +471,9 @@ VERDICT:
               <button className="outline-btn" onClick={() => { setReport(null); setIdea(''); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
                 ← Check Another Idea
               </button>
-              {!paywall.canCheck && (
-                <button className="submit-btn" onClick={() => paywall.setShowPaywall(true)}>
-                  Get More Checks 🔥
-                </button>
-              )}
+              <button className="submit-btn" onClick={() => paywall.setShowPaywall(true)}>
+                Get More Checks 🔥
+              </button>
             </div>
           </div>
         )}
