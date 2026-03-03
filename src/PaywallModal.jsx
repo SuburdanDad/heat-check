@@ -77,7 +77,7 @@ export default function PaywallModal({ onDismiss }) {
             <div style={{
               fontFamily: "'Bebas Neue', sans-serif", fontSize: '44px',
               color: '#e5e5e5', lineHeight: 1
-            }}>$7</div>
+            }}>$3</div>
             <div style={{
               fontFamily: "'Space Mono', monospace", fontSize: '10px',
               color: '#444', letterSpacing: '0.1em', marginTop: '4px', marginBottom: '12px'
@@ -106,11 +106,11 @@ export default function PaywallModal({ onDismiss }) {
             <div style={{
               fontFamily: "'Bebas Neue', sans-serif", fontSize: '44px',
               color: '#ff6b35', lineHeight: 1
-            }}>$49</div>
+            }}>$29</div>
             <div style={{
               fontFamily: "'Space Mono', monospace", fontSize: '10px',
               color: '#666', letterSpacing: '0.1em', marginTop: '4px', marginBottom: '12px'
-            }}>10 checks · $4.90 each</div>
+            }}>10 checks · $2.90 each</div>
             <div style={{ fontFamily: "'Lora', serif", fontStyle: 'italic', color: '#777', fontSize: '13px' }}>
               For serial idea machines. 30% off per check.
             </div>
