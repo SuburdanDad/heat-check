@@ -1,7 +1,5 @@
 import { useState } from 'react'
 
-const BEEHIIV_FORM = import.meta.env.VITE_BEEHIIV_FORM_URL || ''
-
 export default function EmailGateModal({ onSuccess, onDismiss }) {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -13,25 +11,20 @@ export default function EmailGateModal({ onSuccess, onDismiss }) {
     setLoading(true)
     setError('')
     try {
-      // If Beehiiv form URL is configured, submit there
-      if (BEEHIIV_FORM) {
-        await fetch(BEEHIIV_FORM, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-          mode: 'no-cors',
-        })
-      }
-      // Always grant the bonus regardless — we trust the user
-      setDone(true)
-      setTimeout(() => onSuccess(email), 1400)
+      await fetch('https://docs.google.com/forms/d/13vr511HgpXJIOUu24ySYOh11WL4w_1L2K7PpiGl9S44/formResponse', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `entry.45752686=${encodeURIComponent(email)}`
+      })
     } catch {
-      // Even on error, grant the bonus — don't punish users for network issues
-      setDone(true)
-      setTimeout(() => onSuccess(email), 1400)
+      // Ignore errors — don't punish users for network issues
     } finally {
       setLoading(false)
     }
+    // Always grant the bonus regardless of response
+    setDone(true)
+    setTimeout(() => onSuccess(email), 1400)
   }
 
   return (
