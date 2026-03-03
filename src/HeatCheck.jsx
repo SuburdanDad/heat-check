@@ -103,6 +103,23 @@ function ChecksCounter({ paywall }) {
   const total = FREE_LIMIT + EMAIL_BONUS
   const flames = hasPaidChecks ? checksRemaining : freeRemaining
 
+  if (!canCheck && emailGiven) {
+    return (
+      <button
+        onClick={() => paywall.setShowPaywall(true)}
+        style={{
+          marginTop: '24px', padding: '10px 20px',
+          background: '#ff6b35', color: '#0a0a0a', border: 'none',
+          fontFamily: "'Space Mono', monospace", fontWeight: '700',
+          fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase',
+          cursor: 'pointer',
+        }}
+      >
+        Get More Checks 🔥
+      </button>
+    )
+  }
+
   return (
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: '10px',
@@ -234,7 +251,7 @@ VERDICT:
     <>
       <style>{`
         textarea:focus { outline: none; }
-        textarea::placeholder { color: #2e2e2e; }
+        textarea::placeholder { color: #888; }
         .submit-btn {
           background: #ff6b35; color: #0a0a0a; border: none;
           padding: 15px 40px; font-family: 'Space Mono', monospace;
@@ -303,7 +320,7 @@ VERDICT:
 
           <p style={{
             fontFamily: "'Inter', sans-serif", fontWeight: '300',
-            color: '#aaa', fontSize: '18px', maxWidth: '480px', lineHeight: '1.7',
+            color: '#ffffff', fontSize: '18px', maxWidth: '480px', lineHeight: '1.7',
             letterSpacing: '0.01em', marginBottom: '32px'
           }}>
             Know if your idea is worth building — before you spend months finding out the hard way.
@@ -323,7 +340,7 @@ VERDICT:
                 { icon: '📈', text: 'Top acquisition channels to get first 10 customers' },
                 { icon: '⚡', text: 'Execution difficulty & time-to-revenue estimate' },
                 { icon: '🔍', text: 'Real competitors & the weaknesses you can exploit' },
-                { icon: '🏆', text: 'Brutal build / no-build verdict' },
+                { icon: '🏆', text: 'Honest build / no-build verdict' },
               ].map(({ icon, text }) => (
                 <div key={text} style={{
                   display: 'inline-flex', alignItems: 'center', gap: '8px',
@@ -334,7 +351,7 @@ VERDICT:
                   <span style={{ fontSize: '13px' }}>{icon}</span>
                   <span style={{
                     fontFamily: "'Inter', sans-serif", fontWeight: '300',
-                    fontSize: '12px', color: '#888', letterSpacing: '0.02em'
+                    fontSize: '12px', color: '#e5e5e5', letterSpacing: '0.02em'
                   }}>{text}</span>
                 </div>
               ))}
@@ -348,7 +365,7 @@ VERDICT:
         <div style={{ width: '100%', maxWidth: '720px', paddingTop: '40px', zIndex: 1 }}>
           <div style={{
             fontSize: '11px', fontFamily: "'Space Mono', monospace",
-            color: '#3a3a3a', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px'
+            color: '#e5e5e5', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px'
           }}>Drop your idea</div>
           <textarea
             value={idea}
@@ -356,12 +373,12 @@ VERDICT:
             placeholder="e.g. An AI tool that writes cold emails personalized to each prospect's LinkedIn profile and recent posts, with one-click sending from Gmail..."
             rows={5}
             style={{
-              width: '100%', background: '#0d0d0d', border: '1px solid #1e1e1e',
+              width: '100%', background: '#0d0d0d', border: '1px solid #ffffff',
               color: '#e5e5e5', fontFamily: "'Inter', sans-serif", fontWeight: '300', fontSize: '15px',
               lineHeight: '1.75', padding: '20px', resize: 'vertical', transition: 'border-color 0.2s',
             }}
             onFocus={e => e.target.style.borderColor = '#ff6b3555'}
-            onBlur={e => e.target.style.borderColor = '#1e1e1e'}
+            onBlur={e => e.target.style.borderColor = '#ffffff'}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#2a2a2a' }}>
