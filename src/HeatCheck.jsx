@@ -230,7 +230,7 @@ VERDICT:
           </p>
 
           <div>
-            <div style={{ fontSize: '10px', fontFamily: "'Space Mono', monospace", color: '#444', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '14px' }}>Every report includes</div>
+            <div style={{ fontSize: '10px', fontFamily: "'Space Mono', monospace", color: '#888', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '14px' }}>Every report includes</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {[
                 { icon: '💰', text: 'Monetization score & pricing strategy' },
@@ -251,37 +251,37 @@ VERDICT:
 
         {/* Input */}
         <div style={{ width: '100%', maxWidth: '720px', paddingTop: '40px', zIndex: 1 }}>
-          <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", color: '#555', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px' }}>Drop your idea</div>
+          <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", color: '#e5e5e5', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px' }}>Drop your idea</div>
           <textarea
             value={idea}
             onChange={e => setIdea(e.target.value)}
             placeholder="e.g. An AI tool that writes cold emails personalized to each prospect's LinkedIn profile and recent posts, with one-click sending from Gmail..."
             rows={5}
-            style={{ width: '100%', background: '#0d0d0d', border: '1px solid #333', color: '#ffffff', fontFamily: "'Inter', sans-serif", fontWeight: '300', fontSize: '15px', lineHeight: '1.75', padding: '20px', resize: 'vertical' }}
+            style={{ width: '100%', background: '#0d0d0d', border: '1px solid #ffffff', color: '#ffffff', fontFamily: "'Inter', sans-serif", fontWeight: '300', fontSize: '15px', lineHeight: '1.75', padding: '20px', resize: 'vertical' }}
             onFocus={e => e.target.style.borderColor = '#ff6b3555'}
-            onBlur={e => e.target.style.borderColor = '#333'}
+            onBlur={e => e.target.style.borderColor = '#ffffff'}
           />
 
           {/* Email field — only shown before email is given */}
           {!paywall.emailGiven && (
             <div style={{ marginTop: '20px' }}>
-              <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", color: '#555', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px' }}>Your email</div>
+              <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", color: '#e5e5e5', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px' }}>Your email</div>
               <input
                 type="email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setEmailError('') }}
                 placeholder="you@example.com"
-                style={{ width: '100%', background: '#0d0d0d', border: '1px solid '+(emailError ? '#f87171' : '#333'), color: '#ffffff', fontFamily: "'Inter', sans-serif", fontWeight: '300', fontSize: '15px', padding: '16px 20px' }}
+                style={{ width: '100%', background: '#0d0d0d', border: '1px solid '+(emailError ? '#f87171' : '#ffffff'), color: '#ffffff', fontFamily: "'Inter', sans-serif", fontWeight: '300', fontSize: '15px', padding: '16px 20px' }}
                 onFocus={e => e.target.style.borderColor = '#ff6b3555'}
-                onBlur={e => e.target.style.borderColor = emailError ? '#f87171' : '#333'}
+                onBlur={e => e.target.style.borderColor = emailError ? '#f87171' : '#ffffff'}
               />
               {emailError && <div style={{ marginTop: '8px', fontSize: '12px', fontFamily: "'Space Mono', monospace", color: '#f87171' }}>{emailError}</div>}
-              <div style={{ marginTop: '8px', fontSize: '11px', fontFamily: "'Space Mono', monospace", color: '#333' }}>1 free report. No spam. Unsubscribe anytime.</div>
+              <div style={{ marginTop: '8px', fontSize: '11px', fontFamily: "'Space Mono', monospace", color: '#666' }}>1 free report. No spam. Unsubscribe anytime.</div>
             </div>
           )}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#333' }}>{idea.length > 0 && idea.length+' chars'}</span>
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#666' }}>{idea.length > 0 && idea.length+' chars'}</span>
             <button className="submit-btn" onClick={handleSubmit} disabled={loading || !idea.trim()}>{btnText}</button>
           </div>
         </div>
