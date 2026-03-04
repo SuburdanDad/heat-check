@@ -108,6 +108,8 @@ export default function HeatCheck() {
   const [thankYouType, setThankYouType] = useState(null)
   const [buildingLanding, setBuildingLanding] = useState(false)
   const [landingUrl, setLandingUrl] = useState(null)
+  const [landingHtml, setLandingHtml] = useState(null)
+  const [landingError, setLandingError] = useState(null)
   const paywall = usePaywall()
 
   async function generateLandingPage(pendingIdea, pendingReport, emailAddr) {
@@ -117,7 +119,8 @@ export default function HeatCheck() {
       body: JSON.stringify({ idea: pendingIdea, report: pendingReport, email: emailAddr || '' })
     })
     const data = await res.json()
-    return data.url
+    if (!res.ok) throw new Error(data.error || 'Generation failed')
+    return { url: data.url || null, html: data.html || null }
   }
 
   useEffect(() => {
@@ -136,20 +139,31 @@ export default function HeatCheck() {
           setBuildingLanding(true)
           window.history.replaceState({}, '', window.location.pathname)
           generateLandingPage(pendingIdea, pendingReport, pendingEmail)
-            .then(url => {
+            .then(({ url, html }) => {
               setBuildingLanding(false)
-              setLandingUrl(url || '')
+              if (url) {
+                setLandingUrl(url)
+              } else if (html) {
+                setLandingHtml(html)
+              } else {
+                setLandingError("Something went wrong generating your page. Email heatcheck@heat-check-alpha.vercel.app with your idea and we'll build it manually within 24 hours.")
+              }
               localStorage.removeItem('hc_pending_idea')
               localStorage.removeItem('hc_pending_report')
               localStorage.removeItem('hc_pending_email')
             })
-            .catch(() => {
+            .catch(err => {
+              console.error('Landing page generation failed:', err)
               setBuildingLanding(false)
+              setLandingError("Something went wrong generating your page. Email heatcheck@heat-check-alpha.vercel.app with your idea and we'll build it manually within 24 hours.")
               localStorage.removeItem('hc_pending_idea')
               localStorage.removeItem('hc_pending_report')
               localStorage.removeItem('hc_pending_email')
             })
-        } catch {}
+        } catch (err) {
+          console.error('Landing page init error:', err)
+          window.history.replaceState({}, '', window.location.pathname)
+        }
       } else {
         window.history.replaceState({}, '', window.location.pathname)
       }
@@ -166,11 +180,17 @@ export default function HeatCheck() {
       setBuildingLanding(true)
       window.history.replaceState({}, '', window.location.pathname)
       generateLandingPage(testIdea, testReport, testEmail)
-        .then(url => {
+        .then(({ url, html }) => {
           setBuildingLanding(false)
-          setLandingUrl(url || '')
+          if (url) setLandingUrl(url)
+          else if (html) setLandingHtml(html)
+          else setLandingError("Something went wrong generating your page. Email heatcheck@heat-check-alpha.vercel.app with your idea and we'll build it manually within 24 hours.")
         })
-        .catch(() => setBuildingLanding(false))
+        .catch(err => {
+          console.error('Landing page generation failed (test):', err)
+          setBuildingLanding(false)
+          setLandingError("Something went wrong generating your page. Email heatcheck@heat-check-alpha.vercel.app with your idea and we'll build it manually within 24 hours.")
+        })
     }
   }, [])
 
@@ -188,11 +208,17 @@ export default function HeatCheck() {
       const testIdea = idea.trim() || TEST_IDEA
       setBuildingLanding(true)
       generateLandingPage(testIdea, report, email || '')
-        .then(url => {
+        .then(({ url, html }) => {
           setBuildingLanding(false)
-          setLandingUrl(url || '')
+          if (url) setLandingUrl(url)
+          else if (html) setLandingHtml(html)
+          else setLandingError("Something went wrong generating your page. Email heatcheck@heat-check-alpha.vercel.app with your idea and we'll build it manually within 24 hours.")
         })
-        .catch(() => setBuildingLanding(false))
+        .catch(err => {
+          console.error('Landing page generation failed (keyboard shortcut):', err)
+          setBuildingLanding(false)
+          setLandingError("Something went wrong generating your page. Email heatcheck@heat-check-alpha.vercel.app with your idea and we'll build it manually within 24 hours.")
+        })
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
@@ -289,7 +315,22 @@ VERDICT:
     )
   }
 
-  if (landingUrl !== null && landingUrl !== undefined) {
+  if (landingError) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ width: '100%', maxWidth: '600px', textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '24px' }}>⚠️</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#f87171', letterSpacing: '0.1em', lineHeight: '1.8', marginBottom: '32px' }}>{landingError}</div>
+          <button
+            style={{ background: 'transparent', color: '#ff6b35', border: '1px solid #ff6b3533', padding: '13px 32px', fontFamily: "'Space Mono', monospace", fontWeight: '700', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}
+            onClick={() => { setLandingError(null); setReport(null); setIdea('') }}
+          >← Back to Heat Check</button>
+        </div>
+      </div>
+    )
+  }
+
+  if (landingUrl !== null || landingHtml !== null) {
     return (
       <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px 80px' }}>
         <style>{`
@@ -323,11 +364,44 @@ VERDICT:
               <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", color: '#444', marginTop: '8px' }}>Click to copy</div>
             </div>
           )}
+          {!landingUrl && landingHtml && (
+            <div style={{ marginBottom: '32px', padding: '20px', background: '#0d0d0d', border: '1px solid #ff6b3530' }}>
+              <div style={{ fontSize: '10px', fontFamily: "'Space Mono', monospace", color: '#ff6b35', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '10px' }}>Your landing page</div>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: '300', color: '#aaa', fontSize: '14px', lineHeight: '1.7', marginBottom: '16px' }}>
+                We couldn't host your page automatically, but your HTML is ready. Click below to preview or download it.
+              </div>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
             {landingUrl && (
               <button className="landing-btn" onClick={() => window.open(landingUrl, '_blank')}>View My Landing Page →</button>
             )}
-            <button className="landing-outline-btn" onClick={() => { setLandingUrl(null); setReport(null); setIdea('') }}>← Back to Heat Check</button>
+            {!landingUrl && landingHtml && (
+              <button
+                className="landing-btn"
+                onClick={() => {
+                  const blob = new Blob([landingHtml], { type: 'text/html' })
+                  const blobUrl = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = blobUrl
+                  a.download = 'landing-page.html'
+                  a.click()
+                  URL.revokeObjectURL(blobUrl)
+                }}
+              >Download My Landing Page ↓</button>
+            )}
+            {!landingUrl && landingHtml && (
+              <button
+                className="landing-btn"
+                style={{ background: '#1a1a1a', color: '#ff6b35' }}
+                onClick={() => {
+                  const blob = new Blob([landingHtml], { type: 'text/html' })
+                  const blobUrl = URL.createObjectURL(blob)
+                  window.open(blobUrl, '_blank')
+                }}
+              >Preview in Browser →</button>
+            )}
+            <button className="landing-outline-btn" onClick={() => { setLandingUrl(null); setLandingHtml(null); setReport(null); setIdea('') }}>← Back to Heat Check</button>
           </div>
         </div>
       </div>
@@ -490,6 +564,8 @@ VERDICT:
                       localStorage.setItem('hc_pending_idea', idea)
                       localStorage.setItem('hc_pending_report', JSON.stringify(report))
                       if (email) localStorage.setItem('hc_pending_email', email)
+                      console.log('hc_pending_idea:', localStorage.getItem('hc_pending_idea'))
+                      console.log('hc_pending_report:', localStorage.getItem('hc_pending_report'))
                       const successUrl = 'https://heat-check-alpha.vercel.app?landing=paid'
                       window.location.href = `${STRIPE_LANDING}?success_url=${encodeURIComponent(successUrl)}`
                     }}
