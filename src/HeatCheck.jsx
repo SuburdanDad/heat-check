@@ -4,6 +4,8 @@ import PaywallModal from './PaywallModal'
 import FeedbackWidget from './FeedbackWidget'
 import ThankYou from './ThankYou'
 
+const STRIPE_LANDING = import.meta.env.VITE_STRIPE_LANDING_LINK || 'https://buy.stripe.com/YOUR_LANDING_LINK'
+
 const STAGES = [
   'Checking the temperature...',
   'Identifying target customers...',
@@ -95,12 +97,54 @@ export default function HeatCheck() {
   const [report, setReport]         = useState(null)
   const [error, setError]           = useState(null)
   const [thankYouType, setThankYouType] = useState(null)
+  const [buildingLanding, setBuildingLanding] = useState(false)
+  const [landingUrl, setLandingUrl] = useState(null)
   const paywall = usePaywall()
+
+  async function generateLandingPage(pendingIdea, pendingReport, emailAddr) {
+    const res = await fetch('/api/generate-landing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idea: pendingIdea, report: pendingReport, email: emailAddr || '' })
+    })
+    const data = await res.json()
+    return data.url
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const payment = params.get('payment')
     if (payment === 'single' || payment === 'pack') setThankYouType(payment)
+
+    const landing = params.get('landing')
+    if (landing === 'paid') {
+      const pendingIdea = localStorage.getItem('hc_pending_idea')
+      const pendingReportStr = localStorage.getItem('hc_pending_report')
+      const pendingEmail = localStorage.getItem('hc_pending_email') || ''
+      if (pendingIdea && pendingReportStr) {
+        try {
+          const pendingReport = JSON.parse(pendingReportStr)
+          setBuildingLanding(true)
+          window.history.replaceState({}, '', window.location.pathname)
+          generateLandingPage(pendingIdea, pendingReport, pendingEmail)
+            .then(url => {
+              setBuildingLanding(false)
+              setLandingUrl(url || '')
+              localStorage.removeItem('hc_pending_idea')
+              localStorage.removeItem('hc_pending_report')
+              localStorage.removeItem('hc_pending_email')
+            })
+            .catch(() => {
+              setBuildingLanding(false)
+              localStorage.removeItem('hc_pending_idea')
+              localStorage.removeItem('hc_pending_report')
+              localStorage.removeItem('hc_pending_email')
+            })
+        } catch {}
+      } else {
+        window.history.replaceState({}, '', window.location.pathname)
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -188,6 +232,61 @@ VERDICT:
 
   if (thankYouType) {
     return <ThankYou type={thankYouType} onComplete={() => { setThankYouType(null); window.history.replaceState({}, '', window.location.pathname) }} />
+  }
+
+  if (buildingLanding) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <style>{`@keyframes spin { to{transform:rotate(360deg)} } @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
+        <div style={{ fontSize: '48px', animation: 'spin 1.5s linear infinite', marginBottom: '32px' }}>🔥</div>
+        <div className="pulse" style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#ff6b35', letterSpacing: '0.18em', textTransform: 'uppercase', animation: 'pulse 2s ease-in-out infinite' }}>Building your landing page...</div>
+      </div>
+    )
+  }
+
+  if (landingUrl !== null && landingUrl !== undefined) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px 80px' }}>
+        <style>{`
+          @keyframes glow { 0%,100%{text-shadow:0 0 40px #ff6b3550} 50%{text-shadow:0 0 80px #ff6b3580,0 0 120px #ff6b3525} }
+          @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+          .landing-btn { background: #ff6b35; color: #0a0a0a; border: none; padding: 15px 40px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+          .landing-btn:hover { background: #ff8c5a; transform: translateY(-1px); }
+          .landing-outline-btn { background: transparent; color: #ff6b35; border: 1px solid #ff6b3533; padding: 13px 32px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+          .landing-outline-btn:hover { border-color: #ff6b35; }
+          .url-block { background: #0d0d0d; border: 1px solid #ff6b3530; padding: 16px 20px; font-family: 'Space Mono', monospace; font-size: 12px; color: #ff6b35; word-break: break-all; cursor: pointer; transition: background 0.2s; }
+          .url-block:hover { background: #111; }
+        `}</style>
+        <div style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse at top, #ff6b3518 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
+        <div style={{ width: '100%', maxWidth: '720px', paddingTop: '72px', position: 'relative', zIndex: 1, animation: 'slideUp 0.7s ease forwards' }}>
+          <div style={{ fontSize: '10px', fontFamily: "'Space Mono', monospace", color: '#ff6b35', letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: '20px' }}>🚀 Landing page ready</div>
+          <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(52px, 11vw, 88px)', letterSpacing: '0.04em', lineHeight: '0.9', color: '#fff', marginBottom: '28px' }}>
+            YOUR LANDING PAGE<br />
+            <span style={{ color: '#ff6b35', animation: 'glow 3s ease-in-out infinite' }}>IS LIVE.</span>
+          </h1>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: '300', color: '#aaa', fontSize: '17px', maxWidth: '520px', lineHeight: '1.75', marginBottom: '36px' }}>
+            Congratulations on taking your first step to becoming an entrepreneur.
+          </p>
+          {landingUrl && (
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ fontSize: '10px', fontFamily: "'Space Mono', monospace", color: '#555', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '10px' }}>Your landing page URL</div>
+              <div
+                className="url-block"
+                onClick={() => { navigator.clipboard.writeText(landingUrl).catch(() => {}) }}
+                title="Click to copy"
+              >{landingUrl}</div>
+              <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", color: '#444', marginTop: '8px' }}>Click to copy</div>
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+            {landingUrl && (
+              <button className="landing-btn" onClick={() => window.open(landingUrl, '_blank')}>View My Landing Page →</button>
+            )}
+            <button className="landing-outline-btn" onClick={() => { setLandingUrl(null); setReport(null); setIdea('') }}>← Back to Heat Check</button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -328,6 +427,31 @@ VERDICT:
                 <div style={{ color: '#ccc', fontFamily: "'Inter', sans-serif", fontSize: '15px', lineHeight: '1.9', fontWeight: '300', letterSpacing: '0.01em' }}>{report.verdict}</div>
               </div>
             )}
+
+            {/* Upsell: Landing Page Generator */}
+            <div style={{ marginTop: '40px', background: '#0d0d0d', border: '1px solid #ff6b3530', padding: '32px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(28px, 5vw, 36px)', letterSpacing: '0.06em', color: '#fff', marginBottom: '10px', lineHeight: 1 }}>WANT TO LAUNCH THIS?</h3>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: '300', color: '#888', fontSize: '14px', lineHeight: '1.75', marginBottom: '0' }}>
+                    We'll build you a landing page based on your idea in under 60 seconds. Share it. Test it. See if people sign up.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', flexShrink: 0 }}>
+                  <div style={{ background: '#ff6b35', color: '#0a0a0a', fontFamily: "'Space Mono', monospace", fontWeight: '700', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', padding: '6px 14px' }}>$5 ONE-TIME</div>
+                  <button
+                    className="submit-btn"
+                    onClick={() => {
+                      localStorage.setItem('hc_pending_idea', idea)
+                      localStorage.setItem('hc_pending_report', JSON.stringify(report))
+                      if (email) localStorage.setItem('hc_pending_email', email)
+                      const successUrl = 'https://heat-check-alpha.vercel.app?landing=paid'
+                      window.location.href = `${STRIPE_LANDING}?success_url=${encodeURIComponent(successUrl)}`
+                    }}
+                  >Build My Landing Page 🚀</button>
+                </div>
+              </div>
+            </div>
 
             <div style={{ marginTop: '48px', display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button className="outline-btn" onClick={() => { setReport(null); setIdea(''); setError(null); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>← Check Another Idea</button>
