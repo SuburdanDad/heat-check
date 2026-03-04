@@ -1,4 +1,5 @@
 export default async function handler(req, res) {
+  console.log('generate-landing called', !!req.body)
   console.log('generate-landing: handler called', { method: req.method })
 
   if (req.method !== 'POST') {
