@@ -365,12 +365,9 @@ VERDICT:
             </div>
           )}
           {!landingUrl && landingHtml && (
-            <div style={{ marginBottom: '32px', padding: '20px', background: '#0d0d0d', border: '1px solid #ff6b3530' }}>
-              <div style={{ fontSize: '10px', fontFamily: "'Space Mono', monospace", color: '#ff6b35', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '10px' }}>Your landing page</div>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: '300', color: '#aaa', fontSize: '14px', lineHeight: '1.7', marginBottom: '16px' }}>
-                We couldn't host your page automatically, but your HTML is ready. Click below to preview or download it.
-              </div>
-            </div>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: '300', color: '#aaa', fontSize: '17px', maxWidth: '520px', lineHeight: '1.75', marginBottom: '36px' }}>
+              Your custom landing page is ready to deploy. Download the HTML file and drop it into any hosting service — Netlify, GitHub Pages, or your own domain.
+            </p>
           )}
           <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
             {landingUrl && (
@@ -403,6 +400,11 @@ VERDICT:
             )}
             <button className="landing-outline-btn" onClick={() => { setLandingUrl(null); setLandingHtml(null); setReport(null); setIdea('') }}>← Back to Heat Check</button>
           </div>
+          {!landingUrl && landingHtml && (
+            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: '300', color: '#555', fontSize: '13px', marginTop: '16px' }}>
+              Need hosting? Drop the file at <a href="https://netlify.com/drop" target="_blank" rel="noopener noreferrer" style={{ color: '#ff6b35', textDecoration: 'none' }}>netlify.com/drop</a> for a free live URL in seconds.
+            </p>
+          )}
         </div>
       </div>
     )
