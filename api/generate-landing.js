@@ -17,9 +17,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' })
   }
 
-  const apiKey = process.env.VITE_ANTHROPIC_API_KEY
+  const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    console.error('generate-landing: VITE_ANTHROPIC_API_KEY not set')
+    console.error('generate-landing: ANTHROPIC_API_KEY not set')
     return res.status(500).json({ error: 'API key not configured' })
   }
 
