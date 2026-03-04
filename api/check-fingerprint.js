@@ -22,7 +22,7 @@ async function setRecord(fingerprint, data) {
     await put(
       `hc-fp/${fingerprint}.json`,
       JSON.stringify(data),
-      { access: 'public', addRandomSuffix: false, token: BLOB_TOKEN }
+      { access: 'private', addRandomSuffix: false, token: BLOB_TOKEN }
     )
   } catch (err) {
     console.error('Blob write error:', err)
