@@ -107,7 +107,7 @@ Return ONLY the complete HTML file starting with <!DOCTYPE html> and ending with
               Congratulations on taking your first step to becoming an entrepreneur. Your landing page has been generated based on your startup idea.
             </p>
             <p style="color: #aaa; font-size: 16px; line-height: 1.6;">
-              Head back to the app to download your landing page HTML file.
+              Your landing page HTML is attached to this email. Open it in any browser to preview, or upload it to Netlify Drop (netlify.com/drop) for a free live URL in seconds.
             </p>
             <p style="color: #555; font-size: 12px; margin-top: 32px;">
               Powered by Heat Check — <a href="https://heat-check-alpha.vercel.app" style="color: #ff6b35;">heat-check-alpha.vercel.app</a>
@@ -126,6 +126,12 @@ Return ONLY the complete HTML file starting with <!DOCTYPE html> and ending with
           to: [email],
           subject: 'Your landing page is ready 🚀',
           html: emailHtml,
+          attachments: [
+            {
+              filename: 'landing-page.html',
+              content: Buffer.from(html).toString('base64'),
+            },
+          ],
         }),
       })
 
