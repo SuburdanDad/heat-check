@@ -6,6 +6,15 @@ import ThankYou from './ThankYou'
 
 const STRIPE_LANDING = import.meta.env.VITE_STRIPE_LANDING_LINK || 'https://buy.stripe.com/YOUR_LANDING_LINK'
 
+const TEST_IDEA = "A subscription app that sends founders a daily 5-minute business challenge to build their entrepreneurship skills"
+
+function isDevMode() {
+  return (
+    window.location.hostname === 'localhost' ||
+    new URLSearchParams(window.location.search).get('devmode') === 'true'
+  )
+}
+
 const STAGES = [
   'Checking the temperature...',
   'Identifying target customers...',
@@ -145,6 +154,24 @@ export default function HeatCheck() {
         window.history.replaceState({}, '', window.location.pathname)
       }
     }
+
+    if (landing === 'test' && isDevMode()) {
+      const testIdea = localStorage.getItem('hc_pending_idea') || TEST_IDEA
+      const testReportStr = localStorage.getItem('hc_pending_report')
+      let testReport = null
+      if (testReportStr) {
+        try { testReport = JSON.parse(testReportStr) } catch {}
+      }
+      const testEmail = localStorage.getItem('hc_pending_email') || ''
+      setBuildingLanding(true)
+      window.history.replaceState({}, '', window.location.pathname)
+      generateLandingPage(testIdea, testReport, testEmail)
+        .then(url => {
+          setBuildingLanding(false)
+          setLandingUrl(url || '')
+        })
+        .catch(() => setBuildingLanding(false))
+    }
   }, [])
 
   useEffect(() => {
@@ -152,6 +179,24 @@ export default function HeatCheck() {
     const iv = setInterval(() => setStageIndex(i => (i + 1) % STAGES.length), 2200)
     return () => clearInterval(iv)
   }, [loading])
+
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key !== 'T' || !e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return
+      if (!report) return
+      if (!isDevMode()) return
+      const testIdea = idea.trim() || TEST_IDEA
+      setBuildingLanding(true)
+      generateLandingPage(testIdea, report, email || '')
+        .then(url => {
+          setBuildingLanding(false)
+          setLandingUrl(url || '')
+        })
+        .catch(() => setBuildingLanding(false))
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [report, idea, email])
 
   async function handleSubmit() {
     if (!idea.trim()) return
