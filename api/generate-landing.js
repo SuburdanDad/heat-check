@@ -13,6 +13,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'API key not configured' })
   }
 
+  // Debug: log whether Blob token is present (visible in Vercel function logs)
+  console.log('BLOB_READ_WRITE_TOKEN present:', !!process.env.BLOB_READ_WRITE_TOKEN)
+
   const scoresText = report.parsedScores
     ? Object.entries(report.parsedScores).map(([k, v]) => `${k}: ${v}/100`).join(', ')
     : ''
@@ -79,28 +82,25 @@ Return ONLY the complete HTML file starting with <!DOCTYPE html> and ending with
     return res.status(500).json({ error: 'Failed to generate landing page: ' + err.message })
   }
 
+  // Save to Vercel Blob — required for a real hosted URL
   let url = null
 
-  // Try to save to Vercel Blob
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN
-  if (blobToken) {
-    try {
-      const { put } = await import('@vercel/blob')
-      const filename = `landing-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.html`
-      const blob = await put(filename, html, {
-        access: 'public',
-        contentType: 'text/html',
-        token: blobToken,
-      })
-      url = blob.url
-    } catch (blobErr) {
-      console.error('Blob error:', blobErr)
-    }
-  }
-
-  // Fallback: return as base64 data URL so the user always gets something
-  if (!url) {
-    url = `data:text/html;base64,${Buffer.from(html).toString('base64')}`
+  try {
+    const { put } = await import('@vercel/blob')
+    const filename = `landing-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.html`
+    const blob = await put(filename, html, {
+      access: 'public',
+      contentType: 'text/html',
+    })
+    url = blob.url
+    console.log('Blob upload succeeded:', url)
+  } catch (blobErr) {
+    console.error('Blob upload failed:', blobErr.message || blobErr)
+    // Never fall back to a data URL — return a proper error so the user can be helped
+    return res.status(500).json({
+      error: 'Landing page storage failed. Please email us and we will generate your page manually.',
+      detail: blobErr.message,
+    })
   }
 
   // Send email via Resend if configured and email provided
