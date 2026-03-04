@@ -1,20 +1,30 @@
 export default async function handler(req, res) {
+  console.log('generate-landing: handler called', { method: req.method })
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
   const { idea, report, email } = req.body
+  console.log('generate-landing: received data', {
+    idea: idea ? idea.slice(0, 80) + '...' : null,
+    hasReport: !!report,
+    email: email || '(none)',
+  })
+
   if (!idea || !report) {
+    console.error('generate-landing: missing required fields', { hasIdea: !!idea, hasReport: !!report })
     return res.status(400).json({ error: 'Missing required fields' })
   }
 
   const apiKey = process.env.VITE_ANTHROPIC_API_KEY
   if (!apiKey) {
+    console.error('generate-landing: VITE_ANTHROPIC_API_KEY not set')
     return res.status(500).json({ error: 'API key not configured' })
   }
 
-  // Debug: log whether Blob token is present (visible in Vercel function logs)
-  console.log('BLOB_READ_WRITE_TOKEN present:', !!process.env.BLOB_READ_WRITE_TOKEN)
+  console.log('blob token exists:', !!process.env.BLOB_READ_WRITE_TOKEN)
+  console.log('resend key exists:', !!process.env.RESEND_API_KEY)
 
   const scoresText = report.parsedScores
     ? Object.entries(report.parsedScores).map(([k, v]) => `${k}: ${v}/100`).join(', ')
@@ -63,26 +73,31 @@ Return ONLY the complete HTML file starting with <!DOCTYPE html> and ending with
       }),
     })
 
+    console.log('generate-landing: Anthropic response status:', anthropicResponse.status)
     const data = await anthropicResponse.json()
 
     if (!anthropicResponse.ok) {
+      console.error('generate-landing: Anthropic error:', data.error)
       return res.status(anthropicResponse.status).json({ error: data.error?.message || 'Anthropic error' })
     }
 
     html = data.content?.map(c => c.text || '').join('\n') || ''
 
     if (!html) {
+      console.error('generate-landing: Empty response from Anthropic')
       return res.status(500).json({ error: 'Empty response from AI' })
     }
 
     // Strip markdown code fences if Claude wrapped the HTML
     html = html.replace(/^```html\n?/, '').replace(/\n?```$/, '').trim()
+    console.log('generate-landing: HTML generated, length:', html.length)
 
   } catch (err) {
+    console.error('generate-landing: Anthropic fetch error:', err.message, err)
     return res.status(500).json({ error: 'Failed to generate landing page: ' + err.message })
   }
 
-  // Save to Vercel Blob — required for a real hosted URL
+  // Save to Vercel Blob — preferred for a real hosted URL
   let url = null
 
   try {
@@ -93,21 +108,52 @@ Return ONLY the complete HTML file starting with <!DOCTYPE html> and ending with
       contentType: 'text/html',
     })
     url = blob.url
-    console.log('Blob upload succeeded:', url)
+    console.log('generate-landing: Blob upload succeeded:', url)
   } catch (blobErr) {
-    console.error('Blob upload failed:', blobErr.message || blobErr)
-    // Never fall back to a data URL — return a proper error so the user can be helped
-    return res.status(500).json({
-      error: 'Landing page storage failed. Please email us and we will generate your page manually.',
-      detail: blobErr.message,
-    })
+    console.error('generate-landing: Blob upload failed:', blobErr.message || blobErr)
+    // Fall back to returning HTML inline so the user still gets their page
+    url = null
   }
 
   // Send email via Resend if configured and email provided
   const resendKey = process.env.RESEND_API_KEY
   if (resendKey && email) {
     try {
-      await fetch('https://api.resend.com/emails', {
+      const emailHtml = url
+        ? `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #ffffff; padding: 40px;">
+            <h1 style="color: #ff6b35; font-size: 32px; margin-bottom: 16px;">Your Landing Page Is Ready! 🚀</h1>
+            <p style="color: #aaa; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+              Congratulations on taking your first step to becoming an entrepreneur. Your custom landing page has been generated based on your startup idea.
+            </p>
+            <p style="margin-bottom: 32px;">
+              <a href="${url}" style="display: inline-block; background: #ff6b35; color: #0a0a0a; padding: 14px 32px; text-decoration: none; font-weight: bold; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;">
+                View Your Landing Page →
+              </a>
+            </p>
+            <p style="color: #aaa; font-size: 14px; margin-bottom: 8px;">Or copy this URL:</p>
+            <p style="color: #ff6b35; font-size: 14px; word-break: break-all; margin-bottom: 32px;">${url}</p>
+            <p style="color: #555; font-size: 12px; margin-top: 32px;">
+              Powered by Heat Check — <a href="https://heat-check-alpha.vercel.app" style="color: #ff6b35;">heat-check-alpha.vercel.app</a>
+            </p>
+          </div>
+        `
+        : `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #ffffff; padding: 40px;">
+            <h1 style="color: #ff6b35; font-size: 32px; margin-bottom: 16px;">Your Landing Page Is Ready! 🚀</h1>
+            <p style="color: #aaa; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+              Congratulations on taking your first step to becoming an entrepreneur. Your landing page was generated but we had trouble hosting it automatically.
+            </p>
+            <p style="color: #aaa; font-size: 16px; line-height: 1.6;">
+              Please check the app — your page HTML is available for download. If you have any issues, reply to this email and we'll sort it out within 24 hours.
+            </p>
+            <p style="color: #555; font-size: 12px; margin-top: 32px;">
+              Powered by Heat Check — <a href="https://heat-check-alpha.vercel.app" style="color: #ff6b35;">heat-check-alpha.vercel.app</a>
+            </p>
+          </div>
+        `
+
+      const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,28 +162,23 @@ Return ONLY the complete HTML file starting with <!DOCTYPE html> and ending with
         body: JSON.stringify({
           from: 'Heat Check <onboarding@resend.dev>',
           to: [email],
-          subject: 'Your landing page is live 🚀',
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #ffffff; padding: 40px;">
-              <h1 style="color: #ff6b35; font-size: 32px; margin-bottom: 16px;">Your Landing Page Is Live! 🚀</h1>
-              <p style="color: #aaa; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
-                Congratulations on taking your first step to becoming an entrepreneur. Your custom landing page has been generated based on your startup idea.
-              </p>
-              <a href="${url}" style="display: inline-block; background: #ff6b35; color: #0a0a0a; padding: 14px 32px; text-decoration: none; font-weight: bold; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;">
-                View Your Landing Page →
-              </a>
-              <p style="color: #555; font-size: 12px; margin-top: 32px;">
-                Powered by Heat Check — <a href="https://heat-check-alpha.vercel.app" style="color: #ff6b35;">heat-check-alpha.vercel.app</a>
-              </p>
-            </div>
-          `,
+          subject: 'Your landing page is ready 🚀',
+          html: emailHtml,
         }),
       })
+
+      const emailData = await emailRes.json()
+      console.log('generate-landing: Resend response status:', emailRes.status, 'body:', JSON.stringify(emailData))
+
+      if (!emailRes.ok) {
+        console.error('generate-landing: Resend failed:', emailData)
+      }
     } catch (emailErr) {
-      console.error('Resend error:', emailErr)
-      // Don't fail — email is a bonus, not required
+      console.error('generate-landing: Resend error:', emailErr)
+      // Don't fail the request — URL/HTML is still returned below
     }
   }
 
-  return res.status(200).json({ url })
+  // Return url if blob storage succeeded, otherwise return html inline
+  return res.status(200).json({ url, html: url ? null : html })
 }
