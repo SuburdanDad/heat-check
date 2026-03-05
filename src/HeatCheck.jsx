@@ -299,7 +299,7 @@ VERDICT:
   }
 
   const outOfChecks = paywall.emailGiven && !paywall.canCheck
-  const btnText = loading ? 'Running...' : outOfChecks ? 'Get More Checks →' : 'Shoot Your Shot! 🔥'
+  const btnText = loading ? 'Running...' : outOfChecks ? 'Get More Checks →' : 'Run Heat Check 🔥'
 
   if (thankYouType) {
     return <ThankYou type={thankYouType} onComplete={() => { setThankYouType(null); window.history.replaceState({}, '', window.location.pathname) }} />
@@ -551,34 +551,28 @@ VERDICT:
 
             {/* Upsell: Landing Page Generator */}
             <div style={{ marginTop: '40px', background: '#0d0d0d', border: '1px solid #ff6b3530', padding: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: '200px' }}>
-                  <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(28px, 5vw, 36px)', letterSpacing: '0.06em', color: '#fff', marginBottom: '10px', lineHeight: 1 }}>WANT TO LAUNCH THIS?</h3>
-                  <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: '300', color: '#888', fontSize: '14px', lineHeight: '1.75', marginBottom: '0' }}>
-                    We'll build you a landing page based on your idea in under 60 seconds. Share it. Test it. See if people sign up.
-                  </p>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', flexShrink: 0 }}>
-                  <div style={{ background: '#ff6b35', color: '#0a0a0a', fontFamily: "'Space Mono', monospace", fontWeight: '700', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', padding: '6px 14px' }}>$5 ONE-TIME</div>
-                  <button
-                    className="submit-btn"
-                    onClick={() => {
-                      localStorage.setItem('hc_pending_idea', idea)
-                      localStorage.setItem('hc_pending_report', JSON.stringify(report))
-                      if (email) localStorage.setItem('hc_pending_email', email)
-                      console.log('hc_pending_idea:', localStorage.getItem('hc_pending_idea'))
-                      console.log('hc_pending_report:', localStorage.getItem('hc_pending_report'))
-                      const successUrl = 'https://heat-check-alpha.vercel.app?landing=paid'
-                      window.location.href = `${STRIPE_LANDING}?success_url=${encodeURIComponent(successUrl)}`
-                    }}
-                  >Build My Landing Page 🚀</button>
-                </div>
+              <div style={{ fontSize: '10px', fontFamily: "'Space Mono', monospace", color: '#ff6b35', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '12px' }}>WANT TO LAUNCH THIS?</div>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(28px, 5vw, 36px)', letterSpacing: '0.06em', color: '#fff', marginBottom: '10px', lineHeight: 1 }}>Turn this report into a landing page</div>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: '300', color: '#888', fontSize: '14px', lineHeight: '1.75', marginBottom: '20px' }}>
+                We'll build you a complete landing page based on your idea in under 60 seconds.
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                <div style={{ background: '#ff6b35', color: '#0a0a0a', fontFamily: "'Space Mono', monospace", fontWeight: '700', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', padding: '6px 14px', flexShrink: 0 }}>$5 ONE-TIME</div>
+                <button
+                  className="submit-btn"
+                  onClick={() => {
+                    localStorage.setItem('hc_pending_idea', idea)
+                    localStorage.setItem('hc_pending_report', JSON.stringify(report))
+                    if (email) localStorage.setItem('hc_pending_email', email)
+                    window.location.href = import.meta.env.VITE_STRIPE_LANDING_LINK
+                  }}
+                >Build My Landing Page 🚀</button>
               </div>
             </div>
 
             <div style={{ marginTop: '48px', display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button className="outline-btn" onClick={() => { setReport(null); setIdea(''); setError(null); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>← Check Another Idea</button>
-              <button className="submit-btn" onClick={() => paywall.setShowPaywall(true)}>Get More Checks 🔥</button>
+              {!paywall.canCheck && <button className="submit-btn" onClick={() => paywall.setShowPaywall(true)}>Get More Checks 🔥</button>}
             </div>
           </div>
         )}
