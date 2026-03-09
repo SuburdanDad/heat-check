@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     ? Object.entries(report.parsedScores).map(([k, v]) => `${k}: ${v}/100`).join(', ')
     : ''
 
-  const prompt = `You are an expert web designer and copywriter. Generate a complete, single-file HTML landing page for the following startup idea.
+  const prompt = `You are an expert web designer and copywriter. Generate a complete, single-file HTML landing page for the following startup idea. This should look like a real funded startup's marketing site — think Linear, Notion, Vercel, or Lemon Squeezy.
 
 IDEA: ${idea}
 
@@ -41,17 +41,25 @@ Competitors: ${report.competitors || ''}
 Verdict: ${report.verdict || ''}
 ${scoresText ? `Scores: ${scoresText}` : ''}
 
-Requirements:
-1. Derive a compelling product name from the idea
-2. Hero section with a bold headline and subheadline based on the customer profile
-3. Three feature/benefit cards based on the acquisition and pricing sections
-4. Social proof placeholder section (e.g., "Join 500+ early adopters")
-5. Simple email signup CTA form (non-functional HTML only, with a styled submit button)
-6. Clean modern dark design using ONLY inline styles — no <style> tags, no external CSS
-7. Import Google Fonts at the top: Inter (300,400,500) and Bebas Neue
-8. Fully self-contained single HTML file. No external dependencies except Google Fonts.
-9. Use dark color scheme: #0a0a0a background, #ffffff text, #ff6b35 accent color
-10. Mobile responsive using a centered container with max-width: 720px and padding: 0 20px
+Design Requirements:
+1. COLOR SCHEME: Choose the best palette for this specific product. Good options: white/navy, white/emerald green, white/deep purple, cream/black, or a bold solid-color hero. DO NOT use a dark background with orange accents. The page should feel clean, professional, and trustworthy.
+2. FONTS: Import Inter and Plus Jakarta Sans from Google Fonts. Use Plus Jakarta Sans for headlines (font-weight 700-800) and Inter for body copy (font-weight 400-500). Do NOT use Space Mono, Bebas Neue, or any monospace/display fonts.
+3. LAYOUT: Modern SaaS landing page structure:
+   - Full-width hero: large headline (derived from customer profile), subheadline, and a prominent CTA button (copy derived from acquisition channels)
+   - 3-column feature grid: features/benefits derived from the pricing and acquisition sections
+   - Social proof row: placeholder stats like "2,400+ teams", "98% satisfaction", "$2M saved" — make them relevant to the idea
+   - Email signup section with a clear headline and input + button
+   - Simple footer with the product name and a tagline
+4. FEEL: Professional and polished. Generous whitespace, clean typography hierarchy, subtle shadows or borders for cards. Not a hacker tool — a real product website.
+5. CONTENT: Derive everything from the report. Product name from the idea. Hero headline from the customer problem. CTA copy from acquisition channels. Feature cards from the product's differentiators vs competitors. Use confident, benefit-driven copy.
+
+Technical Requirements:
+- Single self-contained HTML file
+- All styles in a <style> tag in the <head> (not inline styles)
+- Google Fonts import link in the <head>
+- No external JavaScript dependencies
+- Mobile responsive with a meta viewport tag and responsive CSS (use max-width containers, flex/grid layouts that stack on mobile)
+- Include placeholder content for all sections — no empty sections
 
 Return ONLY the complete HTML file starting with <!DOCTYPE html> and ending with </html>. No explanation, no markdown code blocks, just the raw HTML.`
 
